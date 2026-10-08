@@ -7,7 +7,10 @@ export class DogViewerPage {
   readonly mainBreed: Locator;
   readonly favoriteToggle: Locator;
   readonly moreDogs: Locator;
+  readonly newDogsButton: Locator;
   readonly thumbnails: Locator;
+  readonly favoritesJumpLink: Locator;
+  readonly announcer: Locator;
   readonly favorites: Locator;
   readonly favoriteItems: Locator;
   readonly favoritesCount: Locator;
@@ -20,7 +23,10 @@ export class DogViewerPage {
     this.mainBreed = page.getByTestId('main-dog-breed');
     this.favoriteToggle = this.featured.getByRole('button', { name: /favorites$/ });
     this.moreDogs = page.getByRole('region', { name: 'More dogs' });
+    this.newDogsButton = this.moreDogs.getByRole('button', { name: 'New dogs' });
     this.thumbnails = this.moreDogs.getByRole('listitem').getByRole('button');
+    this.favoritesJumpLink = this.featured.getByRole('link', { name: /^Favorites \(\d+\)$/ });
+    this.announcer = page.getByRole('status').filter({ hasText: /favorites$/ });
     this.favorites = page.getByRole('complementary', { name: /^Favorites/ });
     this.favoriteItems = this.favorites.getByRole('listitem');
     this.favoritesCount = page.getByTestId('favorites-count');
@@ -48,6 +54,49 @@ export class DogViewerPage {
 
   removeFavoriteButton(breed: string): Locator {
     return this.favorites.getByRole('button', { name: `Remove ${breed} from favorites` });
+  }
+
+  /** Picks a thumbnail and waits for the page to finish scrolling to the main image. */
+  async pickThumbnail(breed: string): Promise<void> {
+    await this.thumbnail(breed).click();
+    await this.waitForScrollEnd();
+  }
+
+  async pickThumbnailAt(index: number): Promise<void> {
+    await this.thumbnails.nth(index).click();
+    await this.waitForScrollEnd();
+  }
+
+  /** Picks a favorite and waits for the page to finish scrolling to the main image. */
+  async pickFavorite(breed: string): Promise<void> {
+    await this.favorite(breed).click();
+    await this.waitForScrollEnd();
+  }
+
+  /**
+   * Picking a dog smooth-scrolls the main image into view. Clicking something else while
+   * the page is still moving can land on the wrong element, so wait until it settles.
+   */
+  async waitForScrollEnd(): Promise<void> {
+    await this.page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          const STABLE_FRAMES = 8;
+          let last = window.scrollY;
+          let stable = 0;
+          const tick = () => {
+            if (window.scrollY === last) {
+              stable += 1;
+              if (stable >= STABLE_FRAMES) return resolve();
+            } else {
+              stable = 0;
+              last = window.scrollY;
+            }
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }),
+    );
   }
 
   async expectMainDog(breed: string, imageUrl: string): Promise<void> {

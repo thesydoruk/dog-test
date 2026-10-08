@@ -32,6 +32,7 @@ export class DogApiMock {
     randomDogs: 'success',
   };
   private brokenImages = new Set<string>();
+  private queuedThumbnails: (readonly string[])[] = [];
   private gate: Promise<void> | null = null;
 
   constructor(private readonly page: Page) {}
@@ -42,9 +43,10 @@ export class DogApiMock {
     );
     await this.page.route(RANDOM_DOGS, (route) => {
       const count = Number(RANDOM_DOGS.exec(route.request().url())?.[1]);
-      return this.respond(route, 'randomDogs', () =>
-        THUMBNAILS.slice(0, count).map((dog) => dog.url),
-      );
+      return this.respond(route, 'randomDogs', () => {
+        const urls = this.queuedThumbnails.shift() ?? THUMBNAILS.map((dog) => dog.url);
+        return urls.slice(0, count);
+      });
     });
     await this.page.route(IMAGES, (route) => {
       const url = route.request().url();
@@ -64,6 +66,11 @@ export class DogApiMock {
 
   breakImage(url: string): void {
     this.brokenImages.add(url);
+  }
+
+  /** Serves these URLs for the next thumbnails request instead of the default set. */
+  queueThumbnails(urls: readonly string[]): void {
+    this.queuedThumbnails.push(urls);
   }
 
   /** Holds every API response until the returned function is called. */

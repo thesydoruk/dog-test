@@ -1,5 +1,11 @@
-import { byBreed, MAIN_DOG, THUMBNAIL_BREEDS, THUMBNAILS } from './support/fixtures';
-import { expect, test } from './support/test';
+import {
+  ALT_THUMBNAILS,
+  byBreed,
+  MAIN_DOG,
+  THUMBNAIL_BREEDS,
+  THUMBNAILS,
+} from './support/fixtures';
+import { expect, SIDEBAR_BREAKPOINT, test } from './support/test';
 
 test.describe('Part 1: general display', () => {
   test('shows a random dog labelled by its breed above 10 labelled thumbnails', async ({
@@ -24,6 +30,8 @@ test.describe('Part 1: general display', () => {
     await expect
       .poll(() => viewer.mainImage.evaluate((img: HTMLImageElement) => img.naturalWidth))
       .toBeGreaterThan(0);
+    // Photos fade in once loaded.
+    await expect(viewer.mainImage).toHaveCSS('opacity', '1');
 
     for (const [index, dog] of THUMBNAILS.entries()) {
       const image = viewer.thumbnails.nth(index).locator('img');
@@ -46,7 +54,7 @@ test.describe('Part 1: general display', () => {
 
     release();
 
-    await expect(viewer.page.getByRole('status')).toHaveCount(0);
+    await expect(viewer.page.getByRole('status').filter({ hasText: 'Loading' })).toHaveCount(0);
     await viewer.expectMainDog(MAIN_DOG.breed, MAIN_DOG.url);
     await expect(viewer.thumbnails).toHaveCount(10);
   });
@@ -58,12 +66,12 @@ test.describe('Part 1: general display', () => {
     );
 
     const pug = byBreed('Pug');
-    await viewer.thumbnail(pug.breed).click();
+    await viewer.pickThumbnail(pug.breed);
     await viewer.expectMainDog(pug.breed, pug.url);
     await expect(viewer.thumbnail(pug.breed)).toHaveAttribute('aria-pressed', 'true');
 
     const beagle = byBreed('Beagle');
-    await viewer.thumbnail(beagle.breed).click();
+    await viewer.pickThumbnail(beagle.breed);
     await viewer.expectMainDog(beagle.breed, beagle.url);
     await expect(viewer.thumbnail(beagle.breed)).toHaveAttribute('aria-pressed', 'true');
     await expect(viewer.thumbnail(pug.breed)).toHaveAttribute('aria-pressed', 'false');
@@ -73,7 +81,7 @@ test.describe('Part 1: general display', () => {
     await viewer.open();
 
     for (const dog of THUMBNAILS) {
-      await viewer.thumbnail(dog.breed).click();
+      await viewer.pickThumbnail(dog.breed);
       await viewer.expectMainDog(dog.breed, dog.url);
     }
   });
@@ -92,20 +100,68 @@ test.describe('Part 1: general display', () => {
     await viewer.expectMainDog(labrador.breed, labrador.url);
   });
 
-  test('focus order follows the visual order', async ({ viewer, page }) => {
+  test('focus order follows the visual order', async ({ viewer, page, browserName }) => {
     await viewer.open();
     await viewer.heading.click();
 
     const focusedName = () =>
       page.evaluate(() => document.activeElement?.textContent?.trim() ?? '');
 
-    await page.keyboard.press('Tab');
-    await expect(viewer.favoriteToggle).toBeFocused();
-
-    for (const breed of THUMBNAIL_BREEDS) {
+    // The favorites link only exists in the single-column layout, and Safari skips
+    // links when tabbing unless the user holds Option, so WebKit never lands on it.
+    const linkInTabOrder = viewer.viewportWidth < SIDEBAR_BREAKPOINT && browserName !== 'webkit';
+    const expectedOrder = [
+      'Add to favorites',
+      ...(linkInTabOrder ? ['Favorites (0)'] : []),
+      'New dogs',
+      ...THUMBNAIL_BREEDS,
+    ];
+    for (const name of expectedOrder) {
       await page.keyboard.press('Tab');
-      expect(await focusedName()).toBe(breed);
+      expect(await focusedName()).toBe(name);
     }
+  });
+
+  test('the chosen dog is brought into view', async ({ viewer }) => {
+    await viewer.open();
+
+    for (const breed of ['English Cocker Spaniel', 'Golden Retriever']) {
+      await viewer.pickThumbnail(breed);
+      await expect(viewer.mainBreed).toHaveText(breed);
+      await expect(viewer.mainImage).toBeInViewport({ ratio: 1 });
+    }
+  });
+
+  test('a new set of dogs can be requested', async ({ viewer, dogApi }) => {
+    await viewer.open();
+    await viewer.pickThumbnail('Pug');
+    dogApi.queueThumbnails(ALT_THUMBNAILS.map((dog) => dog.url));
+
+    await viewer.newDogsButton.click();
+
+    await expect(viewer.thumbnails).toHaveText(ALT_THUMBNAILS.map((dog) => dog.breed));
+    expect(dogApi.requests.randomDogs).toBe(2);
+    // The dog on display is untouched.
+    await viewer.expectMainDog('Pug', byBreed('Pug').url);
+    await expect(
+      viewer.thumbnails.filter({ has: viewer.page.locator('[aria-pressed="true"]') }),
+    ).toHaveCount(0);
+  });
+
+  test('the old dogs stay visible but inactive while new ones load', async ({ viewer, dogApi }) => {
+    await viewer.open();
+    const release = dogApi.holdResponses();
+
+    await viewer.newDogsButton.click();
+
+    await expect(viewer.newDogsButton).toHaveAttribute('aria-disabled', 'true');
+    await expect(viewer.moreDogs.getByRole('status')).toHaveText('Loading new dogs…');
+    await expect(viewer.moreDogs.getByRole('list')).toHaveAttribute('aria-busy', 'true');
+    await expect(viewer.thumbnails).toHaveCount(10);
+
+    release();
+    await expect(viewer.newDogsButton).toHaveAttribute('aria-disabled', 'false');
+    await expect(viewer.moreDogs.getByRole('list')).toHaveAttribute('aria-busy', 'false');
   });
 
   test('a broken image falls back to a labelled placeholder', async ({ viewer, dogApi }) => {
@@ -124,7 +180,7 @@ test.describe('Part 1: general display', () => {
 
     // Picking a working image recovers the main view.
     const husky = byBreed('Husky');
-    await viewer.thumbnail(husky.breed).click();
+    await viewer.pickThumbnail(husky.breed);
     await viewer.expectMainDog(husky.breed, husky.url);
     await expect(mainFallback).toHaveCount(0);
   });

@@ -31,7 +31,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     }) => {
       await viewer.open();
       await viewer.favoriteToggle.click();
-      await viewer.thumbnail('Pug').click();
+      await viewer.pickThumbnail('Pug');
       await viewer.favoriteToggle.click();
       await viewer.thumbnail('Pug').hover();
       await expectNoViolations(page);
@@ -48,7 +48,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     test('the loading state has no WCAG violations', async ({ viewer, dogApi, page }) => {
       const release = dogApi.holdResponses();
       await viewer.goto();
-      await expect(page.getByRole('status')).toHaveCount(2);
+      await expect(page.getByRole('status').filter({ hasText: 'Loading' })).toHaveCount(2);
       await expectNoViolations(page);
       release();
     });

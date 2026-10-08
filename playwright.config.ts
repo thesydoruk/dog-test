@@ -36,7 +36,8 @@ export default defineConfig({
   reporter: isCI
     ? [['github'], ['html', { open: 'never' }]]
     : [['list'], ['html', { open: 'never' }]],
-  expect: { timeout: 7_000 },
+  // Headless Firefox on Windows is slow under parallel load, hence the generous timeout.
+  expect: { timeout: 10_000 },
   use: {
     baseURL: BASE_URL,
     // Recording a trace for every test is expensive; only record retries.

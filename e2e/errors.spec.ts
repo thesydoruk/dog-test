@@ -25,7 +25,7 @@ test.describe('API errors', () => {
     await expect(viewer.featured.getByRole('alert')).toBeVisible();
 
     const pug = byBreed('Pug');
-    await viewer.thumbnail(pug.breed).click();
+    await viewer.pickThumbnail(pug.breed);
 
     await expect(viewer.featured.getByRole('alert')).toHaveCount(0);
     await viewer.expectMainDog(pug.breed, pug.url);
@@ -67,7 +67,7 @@ test.describe('API errors', () => {
     await expect(viewer.featured.getByRole('alert')).toBeVisible();
     await expect(viewer.moreDogs.getByRole('alert')).toBeVisible();
 
-    await viewer.favorite(MAIN_DOG.breed).click();
+    await viewer.pickFavorite(MAIN_DOG.breed);
     await viewer.expectMainDog(MAIN_DOG.breed, MAIN_DOG.url);
   });
 });

@@ -1,5 +1,5 @@
 import { byBreed, MAIN_DOG } from './support/fixtures';
-import { expect, test } from './support/test';
+import { expect, SIDEBAR_BREAKPOINT, test } from './support/test';
 
 test.describe('Part 2: favorites', () => {
   test('starts with an empty favorites list', async ({ viewer }) => {
@@ -33,8 +33,8 @@ test.describe('Part 2: favorites', () => {
     await viewer.open();
 
     await viewer.favoriteToggle.click();
-    await viewer.thumbnail('Pug').click();
-    await viewer.favorite(MAIN_DOG.breed).click();
+    await viewer.pickThumbnail('Pug');
+    await viewer.pickFavorite(MAIN_DOG.breed);
 
     await expect(viewer.favoriteToggle).toHaveText('Remove from favorites');
     await expect(viewer.favoriteItems).toHaveCount(1);
@@ -55,7 +55,7 @@ test.describe('Part 2: favorites', () => {
 
     await viewer.favoriteToggle.click();
     for (const breed of ['Pug', 'Beagle', 'Husky']) {
-      await viewer.thumbnail(breed).click();
+      await viewer.pickThumbnail(breed);
       await viewer.favoriteToggle.click();
     }
 
@@ -68,17 +68,17 @@ test.describe('Part 2: favorites', () => {
     const pug = byBreed('Pug');
 
     await viewer.favoriteToggle.click();
-    await viewer.thumbnail(pug.breed).click();
+    await viewer.pickThumbnail(pug.breed);
     await viewer.favoriteToggle.click();
-    await viewer.thumbnail('Beagle').click();
+    await viewer.pickThumbnail('Beagle');
 
-    await viewer.favorite(MAIN_DOG.breed).click();
+    await viewer.pickFavorite(MAIN_DOG.breed);
     await viewer.expectMainDog(MAIN_DOG.breed, MAIN_DOG.url);
     await expect(viewer.favorite(MAIN_DOG.breed)).toHaveAttribute('aria-pressed', 'true');
     await expect(viewer.favorite(pug.breed)).toHaveAttribute('aria-pressed', 'false');
     await expect(viewer.favoriteToggle).toHaveText('Remove from favorites');
 
-    await viewer.favorite(pug.breed).click();
+    await viewer.pickFavorite(pug.breed);
     await viewer.expectMainDog(pug.breed, pug.url);
     // The thumbnail of the same photo is highlighted as well.
     await expect(viewer.thumbnail(pug.breed)).toHaveAttribute('aria-pressed', 'true');
@@ -88,7 +88,7 @@ test.describe('Part 2: favorites', () => {
     await viewer.open();
 
     await viewer.favoriteToggle.click();
-    await viewer.thumbnail('Pug').click();
+    await viewer.pickThumbnail('Pug');
     await viewer.favoriteToggle.click();
 
     await expect(viewer.removeFavoriteButton(MAIN_DOG.breed)).toBeVisible();
@@ -140,18 +140,53 @@ test.describe('Part 2: favorites', () => {
     await expect(viewer.favorites.getByRole('heading')).toBeFocused();
   });
 
+  test('changes are announced to assistive technology', async ({ viewer }) => {
+    await viewer.open();
+    await expect(viewer.announcer).toHaveCount(0);
+
+    await viewer.favoriteToggle.click();
+    await expect(viewer.announcer).toHaveText('Afghan Hound added to favorites');
+
+    await viewer.removeFavoriteButton(MAIN_DOG.breed).click();
+    await expect(viewer.announcer).toHaveText('Afghan Hound removed from favorites');
+  });
+
+  test('on phones a link next to the button counts favorites and jumps to the list', async ({
+    viewer,
+    page,
+  }) => {
+    await viewer.open();
+
+    if (viewer.viewportWidth >= SIDEBAR_BREAKPOINT) {
+      // The list is already beside the dogs, so there is nothing to jump to.
+      await expect(viewer.favoritesJumpLink).toBeHidden();
+      return;
+    }
+
+    await expect(viewer.favoritesJumpLink).toHaveText('Favorites (0)');
+    await expect(viewer.favorites).not.toBeInViewport();
+
+    await viewer.favoriteToggle.click();
+    await expect(viewer.favoritesJumpLink).toHaveText('Favorites (1)');
+
+    await viewer.favoritesJumpLink.click();
+    await expect(viewer.favorites.getByRole('heading')).toBeFocused();
+    await expect(viewer.favorites).toBeInViewport();
+    expect(page.url()).not.toContain('#');
+  });
+
   test('favorites survive a page reload', async ({ viewer, page }) => {
     await viewer.open();
 
     await viewer.favoriteToggle.click();
-    await viewer.thumbnail('Beagle').click();
+    await viewer.pickThumbnail('Beagle');
     await viewer.favoriteToggle.click();
 
     await page.reload();
     await expect(viewer.mainBreed).toBeVisible();
 
     await expect(viewer.favoriteItems).toHaveText([MAIN_DOG.breed, 'Beagle']);
-    await viewer.favorite('Beagle').click();
+    await viewer.pickFavorite('Beagle');
     await viewer.expectMainDog('Beagle', byBreed('Beagle').url);
   });
 
@@ -160,7 +195,7 @@ test.describe('Part 2: favorites', () => {
 
     await viewer.favoriteToggle.click();
     for (let index = 0; index < 10; index += 1) {
-      await viewer.thumbnails.nth(index).click();
+      await viewer.pickThumbnailAt(index);
       await viewer.favoriteToggle.click();
     }
     await expect(viewer.favoritesCount).toHaveText('11');

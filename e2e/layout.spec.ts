@@ -78,13 +78,14 @@ test.describe('Responsive layout', () => {
     await viewer.open();
     await viewer.favoriteToggle.click();
 
-    const tooSmall = await page.getByRole('button').evaluateAll((buttons) =>
-      buttons
-        .map((button) => {
-          const { width, height } = button.getBoundingClientRect();
-          return { name: button.getAttribute('aria-label') ?? button.textContent, width, height };
+    const tooSmall = await page.locator('button, a').evaluateAll((controls) =>
+      controls
+        .map((control) => {
+          const { width, height } = control.getBoundingClientRect();
+          return { name: control.getAttribute('aria-label') ?? control.textContent, width, height };
         })
-        .filter(({ width, height }) => width < 44 || height < 44),
+        // Hidden controls (e.g. the favorites link on wide screens) have no box at all.
+        .filter(({ width, height }) => width + height > 0 && (width < 44 || height < 44)),
     );
     expect(tooSmall).toEqual([]);
   });

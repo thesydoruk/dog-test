@@ -20,6 +20,20 @@ export const THUMBNAILS = [
 
 export const THUMBNAIL_BREEDS = THUMBNAILS.map((dog) => dog.breed);
 
+/** A second set, served when a test asks for new dogs. */
+export const ALT_THUMBNAILS = [
+  { url: image('akita', 'Akita_hiro'), breed: 'Akita' },
+  { url: image('boxer', 'n02108089_1'), breed: 'Boxer' },
+  { url: image('dalmatian', 'cooper'), breed: 'Dalmatian' },
+  { url: image('greyhound-italian', 'n02091032_1'), breed: 'Italian Greyhound' },
+  { url: image('malamute', 'n02110063_1'), breed: 'Malamute' },
+  { url: image('newfoundland', 'n02111277_1'), breed: 'Newfoundland' },
+  { url: image('pomeranian', 'n02112018_1'), breed: 'Pomeranian' },
+  { url: image('samoyed', 'n02111889_1'), breed: 'Samoyed' },
+  { url: image('setter-irish', 'n02100877_1'), breed: 'Irish Setter' },
+  { url: image('whippet', 'n02091134_1'), breed: 'Whippet' },
+] as const;
+
 export const byBreed = (breed: string) => {
   const dog = THUMBNAILS.find((thumbnail) => thumbnail.breed === breed);
   if (!dog) throw new Error(`No fixture for ${breed}`);

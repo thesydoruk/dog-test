@@ -3,10 +3,14 @@
 A small React app that shows random dogs from the [Dog API](https://dog.ceo/dog-api/documentation).
 
 - A random dog is shown at the top, labelled by its breed, with 10 random thumbnails below it.
-- Clicking a thumbnail makes it the main image. Thumbnails grow slightly on hover.
+  **New dogs** loads another set of thumbnails.
+- Clicking a thumbnail makes it the main image and scrolls it into view when it's off screen.
+  Thumbnails grow slightly on hover.
 - A favorites list (on the right from tablet width up, below the dogs on phones) holds dogs saved
   with the **Add to favorites** button. Clicking a favorite shows it as the main image, and each
   favorite has a remove button. Favorites are kept in `localStorage`, so they survive a reload.
+  On phones a **Favorites (n)** link next to the button jumps to the list, and every change is
+  announced to screen readers.
 
 ## Getting started
 
@@ -50,11 +54,14 @@ src/
   domain/     Dog and Breed models, breed parsing from image URLs
   features/
     viewer/     Main dog, thumbnail grid, selection state, data hooks
-    favorites/  Favorites panel, add button, reducer, context, storage
-  shared/ui/  Reusable UI: image with fallback, loading and error states
+    favorites/  Favorites panel, add button, jump link, announcer, reducer, context, storage
+  shared/ui/  Reusable UI: image with fallback and fade-in, loading and error states
+  shared/dom/ Scrolling helpers that respect reduced motion
   app/        App layout, providers, query client
   styles/     Design tokens and global styles
 ```
+
+Tests live in a `__tests__` folder next to the code they cover.
 
 - **Server state** lives in [TanStack Query](https://tanstack.com/query). Random endpoints return
   new dogs on every call, so background refetching is turned off; the user only gets new data
@@ -79,9 +86,11 @@ src/
   768, 1280 and 1920 px wide. The Dog API and image CDN are mocked with deterministic fixtures, so
   the runs are fast and stable. The tests cover:
   - Part 1: initial display, loading placeholders, thumbnail selection by mouse and keyboard,
-    focus order, broken-image fallback, hover growth and reduced motion.
+    scrolling the chosen dog into view, focus order, broken-image fallback, hover growth,
+    reduced motion and loading a new set of dogs.
   - Part 2: the empty state, adding, toggling, no duplicates, order, selecting a favorite,
-    removing (including focus handling), persistence across reloads, long lists.
+    removing (including focus handling), persistence across reloads, long lists, the jump
+    link on phones and screen reader announcements.
   - API errors and retry, and favorites working while the API is down.
   - Responsive layout: no horizontal scroll, favorites position, grid columns, touch targets of
     at least 44 px, sticky favorites.
