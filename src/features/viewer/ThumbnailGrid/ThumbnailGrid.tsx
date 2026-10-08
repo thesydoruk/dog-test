@@ -1,11 +1,11 @@
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { Loading } from '@/shared/ui/Loading';
 import { RefreshIcon } from './RefreshIcon';
-import { useSelection } from './SelectionContext';
+import { useSelection } from '../SelectionContext';
 import { Thumbnail } from './Thumbnail';
 import styles from './ThumbnailGrid.module.css';
-import { THUMBNAIL_COUNT, useRandomDogs } from './useRandomDogs';
-import { useCurrentDog } from './useCurrentDog';
+import { THUMBNAIL_COUNT, useRandomDogs } from '../useRandomDogs';
+import { useCurrentDog } from '../useCurrentDog';
 
 export function ThumbnailGrid() {
   const { data: dogs, isPending, isError, isFetching, refetch } = useRandomDogs(THUMBNAIL_COUNT);

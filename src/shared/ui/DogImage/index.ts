@@ -1,0 +1,1 @@
+export { DogImage } from './DogImage';

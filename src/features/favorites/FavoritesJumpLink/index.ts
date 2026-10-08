@@ -1,0 +1,1 @@
+export { FavoritesJumpLink } from './FavoritesJumpLink';

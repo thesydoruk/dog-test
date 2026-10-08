@@ -3,7 +3,7 @@ import { http } from 'msw';
 import { MAIN_DOG_URL, THUMBNAIL_URLS, thumbnailDogs } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import { apiError, randomDogsUrl, server, success } from '@/test/server';
-import { MainDog } from '../MainDog';
+import { MainDog } from '../../MainDog';
 import { ThumbnailGrid } from '../ThumbnailGrid';
 
 const grid = () => screen.getByRole('region', { name: 'More dogs' });

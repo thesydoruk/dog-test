@@ -1,7 +1,7 @@
 import type { MouseEvent } from 'react';
 import { scrollBehavior } from '@/shared/dom/scroll';
-import { FAVORITES_HEADING_ID } from './constants';
-import { useFavorites } from './FavoritesContext';
+import { FAVORITES_HEADING_ID } from '../constants';
+import { useFavorites } from '../FavoritesContext';
 import styles from './FavoritesJumpLink.module.css';
 
 /**

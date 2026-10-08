@@ -61,7 +61,13 @@ src/
   styles/     Design tokens and global styles
 ```
 
-Tests live in a `__tests__` folder next to the code they cover.
+Conventions:
+
+- A component that has its own styles, or private sub-components nobody else uses, lives in a
+  folder with an `index.ts` (`features/viewer/ThumbnailGrid/` holds `Thumbnail` and
+  `RefreshIcon`). Importers use the folder path and never reach inside it.
+- Plain modules (hooks, contexts, pure functions, unstyled components) stay flat.
+- Tests live in a `__tests__` folder next to the code they cover.
 
 - **Server state** lives in [TanStack Query](https://tanstack.com/query). Random endpoints return
   new dogs on every call, so background refetching is turned off; the user only gets new data

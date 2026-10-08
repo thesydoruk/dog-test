@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { mainDog } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import { AddToFavoritesButton } from '../AddToFavoritesButton';
-import { loadFavorites } from '../storage';
+import { loadFavorites } from '../../storage';
 
 describe('AddToFavoritesButton', () => {
   it('toggles the dog in and out of favorites', async () => {

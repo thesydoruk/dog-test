@@ -1,5 +1,5 @@
 import type { Dog } from '@/domain/dog';
-import { useFavorites } from './FavoritesContext';
+import { useFavorites } from '../FavoritesContext';
 import { HeartIcon } from './HeartIcon';
 
 export function AddToFavoritesButton({ dog }: { dog: Dog }) {

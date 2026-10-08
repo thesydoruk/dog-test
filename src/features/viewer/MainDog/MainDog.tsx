@@ -5,7 +5,7 @@ import { DogImage } from '@/shared/ui/DogImage';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { Loading } from '@/shared/ui/Loading';
 import styles from './MainDog.module.css';
-import { useCurrentDog } from './useCurrentDog';
+import { useCurrentDog } from '../useCurrentDog';
 
 interface MainDogProps {
   /** Slot for actions on the shown dog (e.g. favoriting), so this feature stays decoupled. */

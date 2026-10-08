@@ -4,7 +4,7 @@ import { mainDog, THUMBNAIL_URLS } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import { apiError, randomDogUrl, server, success } from '@/test/server';
 import { MainDog } from '../MainDog';
-import { ThumbnailGrid } from '../ThumbnailGrid';
+import { ThumbnailGrid } from '../../ThumbnailGrid';
 
 const region = () => screen.getByRole('region', { name: 'Featured dog' });
 

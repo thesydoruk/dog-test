@@ -1,0 +1,1 @@
+export { MainDog } from './MainDog';

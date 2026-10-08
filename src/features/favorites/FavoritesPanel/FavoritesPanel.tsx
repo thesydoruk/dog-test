@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { Dog } from '@/domain/dog';
-import { FAVORITES_HEADING_ID } from './constants';
+import { FAVORITES_HEADING_ID } from '../constants';
 import { FavoriteItem } from './FavoriteItem';
-import { useFavorites } from './FavoritesContext';
+import { useFavorites } from '../FavoritesContext';
 import styles from './FavoritesPanel.module.css';
 
 interface FavoritesPanelProps {

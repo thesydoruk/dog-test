@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { mainDog, thumbnailDogs } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import { FavoritesJumpLink } from '../FavoritesJumpLink';
-import { FavoritesPanel } from '../FavoritesPanel';
+import { FavoritesPanel } from '../../FavoritesPanel';
 
 describe('FavoritesJumpLink', () => {
   it('shows the number of favorites', () => {
