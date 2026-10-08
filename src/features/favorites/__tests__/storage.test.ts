@@ -1,5 +1,5 @@
 import { mainDog, thumbnailDogs } from '@/test/fixtures';
-import { FAVORITES_STORAGE_KEY, loadFavorites, saveFavorites } from './storage';
+import { FAVORITES_STORAGE_KEY, loadFavorites, saveFavorites } from '../storage';
 
 describe('favorites storage', () => {
   it('round-trips favorites through localStorage', () => {

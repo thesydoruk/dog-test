@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { DogImage } from './DogImage';
+import { DogImage } from '../DogImage';
 
 describe('DogImage', () => {
   it('renders a lazy image by default', () => {

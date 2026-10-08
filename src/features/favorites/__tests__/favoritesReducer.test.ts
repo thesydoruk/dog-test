@@ -1,5 +1,5 @@
 import { mainDog, thumbnailDogs } from '@/test/fixtures';
-import { favoritesReducer } from './favoritesReducer';
+import { favoritesReducer } from '../favoritesReducer';
 
 const [first, second] = thumbnailDogs as [(typeof thumbnailDogs)[0], (typeof thumbnailDogs)[0]];
 

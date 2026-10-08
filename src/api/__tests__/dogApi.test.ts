@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { MAIN_DOG_URL, mainDog, thumbnailDogs } from '@/test/fixtures';
 import { apiError, randomDogsUrl, randomDogUrl, server } from '@/test/server';
-import { DogApiError, fetchRandomDog, fetchRandomDogs, MAX_RANDOM_DOGS } from './dogApi';
+import { DogApiError, fetchRandomDog, fetchRandomDogs, MAX_RANDOM_DOGS } from '../dogApi';
 
 describe('fetchRandomDog', () => {
   it('returns a dog built from the image URL', async () => {

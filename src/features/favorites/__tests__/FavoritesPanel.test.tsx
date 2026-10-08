@@ -2,7 +2,7 @@ import { screen, within } from '@testing-library/react';
 import type { Dog } from '@/domain/dog';
 import { mainDog, thumbnailDogs } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
-import { FavoritesPanel } from './FavoritesPanel';
+import { FavoritesPanel } from '../FavoritesPanel';
 
 const [pug, husky] = [thumbnailDogs[1]!, thumbnailDogs[2]!];
 

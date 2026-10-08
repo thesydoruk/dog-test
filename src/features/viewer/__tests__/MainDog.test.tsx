@@ -3,7 +3,7 @@ import { delay, http } from 'msw';
 import { mainDog } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import { apiError, randomDogUrl, server, success } from '@/test/server';
-import { MainDog } from './MainDog';
+import { MainDog } from '../MainDog';
 
 const region = () => screen.getByRole('region', { name: 'Featured dog' });
 

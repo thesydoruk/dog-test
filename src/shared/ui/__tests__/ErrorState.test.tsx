@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ErrorState } from './ErrorState';
+import { ErrorState } from '../ErrorState';
 
 describe('ErrorState', () => {
   it('announces the message and retries on click', async () => {

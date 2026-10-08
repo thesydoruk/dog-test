@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
-import { AppProviders } from './providers';
+import { AppProviders } from '../providers';
 
 function StaleTime() {
   const staleTime = useQueryClient().getDefaultOptions().queries?.staleTime;

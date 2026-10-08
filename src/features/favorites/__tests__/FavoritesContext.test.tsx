@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { mainDog, thumbnailDogs } from '@/test/fixtures';
-import { FavoritesProvider, useFavorites } from './FavoritesContext';
-import { FAVORITES_STORAGE_KEY, loadFavorites } from './storage';
+import { FavoritesProvider, useFavorites } from '../FavoritesContext';
+import { FAVORITES_STORAGE_KEY, loadFavorites } from '../storage';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <FavoritesProvider>{children}</FavoritesProvider>

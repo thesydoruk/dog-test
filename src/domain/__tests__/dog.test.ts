@@ -1,4 +1,4 @@
-import { createDog, isDog } from './dog';
+import { createDog, isDog } from '../dog';
 
 const url = 'https://images.dog.ceo/breeds/hound-afghan/n02088094_1003.jpg';
 

@@ -2,11 +2,13 @@ import { screen, within } from '@testing-library/react';
 import { loadFavorites } from '@/features/favorites/storage';
 import { mainDog, THUMBNAIL_URLS } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
-import { App } from './App';
+import { App } from '../App';
 
 const mainBreed = () => screen.getByTestId('main-dog-breed');
 const thumbnails = () => screen.getByRole('region', { name: 'More dogs' });
 const favorites = () => screen.getByRole('complementary', { name: /favorites/i });
+const findThumbnailButtons = async () =>
+  within(await within(thumbnails()).findByRole('list')).getAllByRole('button');
 
 describe('App', () => {
   it('renders the page structure', async () => {
@@ -15,8 +17,10 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Dog Viewer' })).toBeInTheDocument();
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(favorites()).toBeInTheDocument();
-    expect(await within(thumbnails()).findAllByRole('button')).toHaveLength(10);
+    expect(await findThumbnailButtons()).toHaveLength(10);
     expect(mainBreed()).toHaveTextContent('Afghan Hound');
+    expect(screen.getByRole('link', { name: 'Favorites (0)' })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it('supports the full favorites flow', async () => {
@@ -29,6 +33,8 @@ describe('App', () => {
       'aria-pressed',
       'true',
     );
+    expect(screen.getByRole('status')).toHaveTextContent('Afghan Hound added to favorites');
+    expect(screen.getByRole('link', { name: 'Favorites (1)' })).toBeInTheDocument();
 
     // Show a thumbnail, then favorite it too.
     await user.click(within(thumbnails()).getByRole('button', { name: 'Pug' }));
@@ -52,6 +58,7 @@ describe('App', () => {
     );
     expect(screen.getByRole('button', { name: 'Add to favorites' })).toBeInTheDocument();
     expect(within(favorites()).getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByRole('status')).toHaveTextContent('Afghan Hound removed from favorites');
   });
 
   it('restores favorites saved in a previous session', async () => {

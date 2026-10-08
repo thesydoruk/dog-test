@@ -1,4 +1,4 @@
-import { breedFromImageUrl, formatBreedName, parseBreedSlug, UNKNOWN_BREED } from './breed';
+import { breedFromImageUrl, formatBreedName, parseBreedSlug, UNKNOWN_BREED } from '../breed';
 
 describe('parseBreedSlug', () => {
   it.each([

@@ -1,4 +1,4 @@
-import { createQueryClient } from './queryClient';
+import { createQueryClient } from '../queryClient';
 
 describe('createQueryClient', () => {
   it('never refetches random dogs in the background', () => {

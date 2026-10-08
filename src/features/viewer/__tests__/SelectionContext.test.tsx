@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { mainDog } from '@/test/fixtures';
-import { SelectionProvider, useSelection } from './SelectionContext';
+import { SelectionProvider, useSelection } from '../SelectionContext';
 
 describe('SelectionContext', () => {
   it('starts with nothing selected and stores the selection', () => {
