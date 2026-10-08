@@ -17,6 +17,12 @@ React 19 + TypeScript + Vite. Full conventions and the e2e toolkit are in
 - In e2e specs, use `viewer.pickThumbnail()` / `pickFavorite()` when another click follows a
   selection; the plain locators are for assertions.
 - Never let e2e tests hit the real Dog API except the `@live` smoke test.
+- Always document code with TSDoc, in the same change that adds or alters it: every exported
+  component, hook, function, type and constant, plus a comment on every prop and interface
+  field. Say what it does and when to use it, and add `@param`, `@returns`, `@throws`, the
+  required provider, `@example` for non-obvious calls and `{@link}` to related code. Props are
+  named interfaces (`interface FooProps`), never inline types. Keep comments true when the code
+  changes. See "Documenting code" in docs/development.md.
 
 ## Commands
 

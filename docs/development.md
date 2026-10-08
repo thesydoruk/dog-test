@@ -37,10 +37,63 @@ covers what you need to know before adding a feature.
 - **Lint rules worth knowing.** `eslint-plugin-react-hooks` v7 is on, so `setState` inside
   `useEffect` is an error. Derive state instead (see `FavoritesAnnouncer`, which reads
   `lastChange` from the reducer rather than diffing in an effect).
+- **Documentation.** Every piece of code is documented with TSDoc in the same change that adds
+  or alters it. See [Documenting code](#documenting-code).
+
+## Documenting code
+
+The goal is that hovering anything in the IDE explains it without opening the file. Document in
+the same commit as the code, and update the comment whenever the behaviour changes; a stale
+comment is worse than none.
+
+**What gets a TSDoc comment (`/** … */`):**
+
+- Every exported component, hook, function, class, type, interface and constant.
+- Every prop and interface field, one comment per field, because VS Code shows it when you hover
+  the prop in JSX.
+- Non-exported helpers when their purpose or a constraint isn't obvious from the name.
+- A module that groups related exports (e.g. `api/dogApi.ts`) gets a top-of-file `@module` block.
+
+**What the comment says:**
+
+- What it does and when to use it, from the caller's point of view. Not a restatement of the name.
+- Behaviour that matters to the caller: states (loading, error, empty), accessibility,
+  responsive behaviour, side effects (storage, scrolling, focus), what stays stable between renders.
+- `@param` for each parameter and `@returns` for the result.
+- `@throws` for each error a caller can get, including when no request is made.
+- The provider it must be rendered inside, if any.
+- `@example` when the call isn't obvious, `@defaultValue` for defaulted props,
+  `{@link Name}` to related code (it renders as a link in the hover).
+
+**Props are named interfaces**, never inline types, so each prop can carry its own comment:
+
+```tsx
+/** Props for {@link Thumbnail}. */
+interface ThumbnailProps {
+  /** The dog to show. */
+  dog: Dog;
+  /** Whether this dog is the main image right now; highlights the card and sets `aria-pressed`. */
+  selected: boolean;
+  /** Called when the card is clicked or activated with Enter / Space. */
+  onSelect: (dog: Dog) => void;
+}
+
+/**
+ * A square-cropped dog photo with its breed name, as one button.
+ *
+ * The breed name is the button's accessible name (the image itself is decorative). …
+ */
+export function Thumbnail({ dog, selected, onSelect }: ThumbnailProps) {
+```
+
+`index.ts` re-exports need no comments: TypeScript shows the original declaration's docs.
+Inline `//` comments are for the _why_ of a tricky line inside a function body, not a substitute
+for TSDoc. Tests document themselves through their names and need no TSDoc.
 
 ## Adding a feature: checklist
 
-1. **Component** in its folder (or flat, per the rules above). Keep it accessible: real
+1. **Component** in its folder (or flat, per the rules above), with TSDoc on the component and
+   every prop (see [Documenting code](#documenting-code)). Keep it accessible: real
    `<button>`s, `aria-pressed` for selection, labels on icon-only controls, `role="status"` for
    things that change without focus.
 2. **Unit / component test** in `__tests__`. Use `renderWithProviders` from `src/test/render.tsx`
