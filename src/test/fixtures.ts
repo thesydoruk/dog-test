@@ -1,3 +1,4 @@
+import type { RawBreedList } from '@/domain/breedCatalog';
 import { createDog } from '@/domain/dog';
 
 const image = (slug: string, file: string) => `https://images.dog.ceo/breeds/${slug}/${file}.jpg`;
@@ -19,3 +20,18 @@ export const THUMBNAIL_URLS = [
 
 export const mainDog = createDog(MAIN_DOG_URL);
 export const thumbnailDogs = THUMBNAIL_URLS.map(createDog);
+
+/** A slice of `/breeds/list/all` in the API's raw shape. */
+export const RAW_BREED_LIST: RawBreedList = {
+  beagle: [],
+  bulldog: ['boston', 'english', 'french'],
+  hound: ['afghan', 'basset', 'blood'],
+  pug: [],
+};
+
+/** What the `/breed/hound/afghan/images` family returns for the fixture breed. */
+export const AFGHAN_HOUND_URLS = [
+  MAIN_DOG_URL,
+  image('hound-afghan', 'n02088094_1007'),
+  image('hound-afghan', 'n02088094_1023'),
+];

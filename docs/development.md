@@ -57,6 +57,24 @@ covers what you need to know before adding a feature.
    `@live` smoke test does.
 6. **README** if the user-facing behaviour changed.
 
+## API client: what is already wired up
+
+`api/dogApi.ts` covers more of the Dog API than the UI uses today, so a breed filter or a breed
+gallery only needs a hook and components:
+
+| Function                         | Endpoint                               | Notes                                                        |
+| -------------------------------- | -------------------------------------- | ------------------------------------------------------------ |
+| `fetchRandomDog()`               | `/breeds/image/random`                 | main image                                                   |
+| `fetchRandomDogs(n)`             | `/breeds/image/random/{n}`             | thumbnails, `n` ≤ 50                                         |
+| `fetchBreeds()`                  | `/breeds/list/all`                     | 100+ breeds with sub-breeds, parsed by `domain/breedCatalog` |
+| `fetchRandomDogsByBreed(ref, n)` | `/breed/{b}[/{sub}]/images/random/{n}` | `ref` is `{ breed, subBreed? }`                              |
+| `fetchBreedImages(ref)`          | `/breed/{b}[/{sub}]/images`            | every photo (hundreds); page it on the client                |
+
+Breed slugs are validated (`[a-z0-9]+`) before they reach a URL. Query keys for all of these are
+in `api/queryKeys.ts` (`dogKeys.*`, `breedKeys.list()`). The MSW server (`src/test/server.ts`)
+and the Playwright mock (`setBreeds`, `setBreedImages`, 404 for unknown breeds) already answer
+these endpoints with fixtures, so tests for new features need no mock plumbing.
+
 ## The e2e toolkit
 
 `e2e/support/test.ts` extends Playwright's `test` with two fixtures:

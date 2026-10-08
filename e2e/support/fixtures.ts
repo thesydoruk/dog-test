@@ -34,6 +34,30 @@ export const ALT_THUMBNAILS = [
   { url: image('whippet', 'n02091134_1'), breed: 'Whippet' },
 ] as const;
 
+/** Raw `/breeds/list/all` shape, covering the breeds used by the thumbnail fixtures. */
+export const BREED_LIST: Record<string, string[]> = {
+  akita: [],
+  beagle: [],
+  bulldog: ['boston', 'english', 'french'],
+  corgi: ['cardigan'],
+  hound: ['afghan', 'basset', 'blood'],
+  husky: [],
+  labrador: [],
+  poodle: ['miniature', 'standard', 'toy'],
+  pug: [],
+  retriever: ['golden'],
+  shiba: [],
+  terrier: ['yorkshire'],
+};
+
+/** Every fixture photo whose URL belongs to the breed (or sub-breed), as the API would list it. */
+export function imagesOfBreed(breed: string, subBreed?: string): string[] {
+  const prefix = `https://images.dog.ceo/breeds/${subBreed ? `${breed}-${subBreed}` : breed}`;
+  return [MAIN_DOG, ...THUMBNAILS, ...ALT_THUMBNAILS]
+    .map((dog) => dog.url)
+    .filter((url) => url.startsWith(`${prefix}/`) || (!subBreed && url.startsWith(`${prefix}-`)));
+}
+
 export const byBreed = (breed: string) => {
   const dog = THUMBNAILS.find((thumbnail) => thumbnail.breed === breed);
   if (!dog) throw new Error(`No fixture for ${breed}`);

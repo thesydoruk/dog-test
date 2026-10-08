@@ -1,7 +1,25 @@
 import { http, HttpResponse } from 'msw';
-import { MAIN_DOG_URL, mainDog, thumbnailDogs } from '@/test/fixtures';
-import { apiError, randomDogsUrl, randomDogUrl, server } from '@/test/server';
-import { DogApiError, fetchRandomDog, fetchRandomDogs, MAX_RANDOM_DOGS } from '../dogApi';
+import { createDog } from '@/domain/dog';
+import { AFGHAN_HOUND_URLS, MAIN_DOG_URL, mainDog, thumbnailDogs } from '@/test/fixtures';
+import {
+  apiError,
+  breedListUrl,
+  randomDogsUrl,
+  randomDogUrl,
+  server,
+  subBreedRandomUrl,
+} from '@/test/server';
+import {
+  DogApiError,
+  fetchBreedImages,
+  fetchBreeds,
+  fetchRandomDog,
+  fetchRandomDogs,
+  fetchRandomDogsByBreed,
+  MAX_RANDOM_DOGS,
+} from '../dogApi';
+
+const afghanDogs = AFGHAN_HOUND_URLS.map(createDog);
 
 describe('fetchRandomDog', () => {
   it('returns a dog built from the image URL', async () => {
@@ -82,5 +100,99 @@ describe('fetchRandomDogs', () => {
     server.use(http.get(randomDogsUrl, () => apiError()));
 
     await expect(fetchRandomDogs(10)).rejects.toBeInstanceOf(DogApiError);
+  });
+});
+
+describe('fetchBreeds', () => {
+  it('returns the parsed catalog', async () => {
+    const breeds = await fetchBreeds();
+
+    expect(breeds.map((b) => b.slug)).toEqual(['beagle', 'bulldog', 'hound', 'pug']);
+    expect(breeds[1]?.subBreeds.map((s) => s.name)).toEqual([
+      'Boston Bulldog',
+      'English Bulldog',
+      'French Bulldog',
+    ]);
+  });
+
+  it('throws a DogApiError on failure', async () => {
+    server.use(http.get(breedListUrl, () => apiError()));
+
+    await expect(fetchBreeds()).rejects.toBeInstanceOf(DogApiError);
+  });
+});
+
+describe('fetchRandomDogsByBreed', () => {
+  it('fetches random dogs of a main breed', async () => {
+    await expect(fetchRandomDogsByBreed({ breed: 'hound' }, 2)).resolves.toEqual(
+      afghanDogs.slice(0, 2),
+    );
+  });
+
+  it('fetches random dogs of a sub-breed', async () => {
+    let requestedPath: string | undefined;
+    server.use(
+      http.get(subBreedRandomUrl, ({ request }) => {
+        requestedPath = new URL(request.url).pathname;
+        return HttpResponse.json({ status: 'success', message: AFGHAN_HOUND_URLS });
+      }),
+    );
+
+    await expect(
+      fetchRandomDogsByBreed({ breed: 'hound', subBreed: 'afghan' }, 3),
+    ).resolves.toEqual(afghanDogs);
+    expect(requestedPath).toBe('/api/breed/hound/afghan/images/random/3');
+  });
+
+  it('surfaces the API "breed not found" error', async () => {
+    await expect(fetchRandomDogsByBreed({ breed: 'dragon' }, 1)).rejects.toMatchObject({
+      name: 'DogApiError',
+      status: 404,
+      message: /Breed not found/,
+    });
+  });
+
+  it.each([0, MAX_RANDOM_DOGS + 1])('rejects count %s', async (count) => {
+    await expect(fetchRandomDogsByBreed({ breed: 'hound' }, count)).rejects.toThrow(RangeError);
+  });
+
+  it.each([
+    [{ breed: 'hound/afghan' }],
+    [{ breed: '../breeds' }],
+    [{ breed: 'Hound' }],
+    [{ breed: 'hound', subBreed: 'af ghan' }],
+    [{ breed: '' }],
+  ])('refuses to build a path from %j', async (ref) => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    await expect(fetchRandomDogsByBreed(ref, 1)).rejects.toThrow(/Invalid breed/);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('fetchBreedImages', () => {
+  it('returns every photo of a main breed', async () => {
+    await expect(fetchBreedImages({ breed: 'hound' })).resolves.toEqual(afghanDogs);
+  });
+
+  it('returns every photo of a sub-breed', async () => {
+    await expect(fetchBreedImages({ breed: 'hound', subBreed: 'afghan' })).resolves.toEqual(
+      afghanDogs,
+    );
+  });
+
+  it('surfaces the API "breed not found" error', async () => {
+    await expect(fetchBreedImages({ breed: 'hound', subBreed: 'dragon' })).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it('refuses invalid slugs without calling the API', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    await expect(fetchBreedImages({ breed: 'hound', subBreed: '../x' })).rejects.toThrow(
+      RangeError,
+    );
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

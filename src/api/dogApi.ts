@@ -1,7 +1,14 @@
+import {
+  isValidBreedSlug,
+  parseBreedList,
+  type BreedRef,
+  type BreedWithSubBreeds,
+  type RawBreedList,
+} from '@/domain/breedCatalog';
 import { createDog, type Dog } from '@/domain/dog';
 
 export const DOG_API_BASE_URL = 'https://dog.ceo/api';
-/** The Dog API caps `/breeds/image/random/:count` at 50 images. */
+/** The documented cap for the `.../random/:count` endpoints. */
 export const MAX_RANDOM_DOGS = 50;
 
 interface DogApiResponse<T> {
@@ -38,15 +45,49 @@ async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
   return body.message;
 }
 
+function assertCount(count: number): void {
+  if (!Number.isInteger(count) || count < 1 || count > MAX_RANDOM_DOGS) {
+    throw new RangeError(`count must be an integer between 1 and ${MAX_RANDOM_DOGS}`);
+  }
+}
+
+/** `/breed/hound` or `/breed/hound/afghan`; slugs are validated so they can't alter the path. */
+function breedPath({ breed, subBreed }: BreedRef): string {
+  if (!isValidBreedSlug(breed) || (subBreed !== undefined && !isValidBreedSlug(subBreed))) {
+    throw new RangeError(`Invalid breed: ${breed}${subBreed ? `/${subBreed}` : ''}`);
+  }
+  return subBreed ? `/breed/${breed}/${subBreed}` : `/breed/${breed}`;
+}
+
 export async function fetchRandomDog(signal?: AbortSignal): Promise<Dog> {
   const imageUrl = await request<string>('/breeds/image/random', signal);
   return createDog(imageUrl);
 }
 
 export async function fetchRandomDogs(count: number, signal?: AbortSignal): Promise<Dog[]> {
-  if (!Number.isInteger(count) || count < 1 || count > MAX_RANDOM_DOGS) {
-    throw new RangeError(`count must be an integer between 1 and ${MAX_RANDOM_DOGS}`);
-  }
+  assertCount(count);
   const imageUrls = await request<string[]>(`/breeds/image/random/${count}`, signal);
+  return imageUrls.map(createDog);
+}
+
+/** All 100+ breeds with their sub-breeds. Changes rarely, so cache it for the session. */
+export async function fetchBreeds(signal?: AbortSignal): Promise<BreedWithSubBreeds[]> {
+  const raw = await request<RawBreedList>('/breeds/list/all', signal);
+  return parseBreedList(raw);
+}
+
+export async function fetchRandomDogsByBreed(
+  ref: BreedRef,
+  count: number,
+  signal?: AbortSignal,
+): Promise<Dog[]> {
+  assertCount(count);
+  const imageUrls = await request<string[]>(`${breedPath(ref)}/images/random/${count}`, signal);
+  return imageUrls.map(createDog);
+}
+
+/** Every photo of a breed (can be hundreds); page it on the client. */
+export async function fetchBreedImages(ref: BreedRef, signal?: AbortSignal): Promise<Dog[]> {
+  const imageUrls = await request<string[]>(`${breedPath(ref)}/images`, signal);
   return imageUrls.map(createDog);
 }
