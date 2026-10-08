@@ -14,14 +14,40 @@ A small React app that shows random dogs from the [Dog API](https://dog.ceo/dog-
 
 ## Getting started
 
-Requires Node.js 20 or newer.
+Requires Node.js 20 or newer (22 recommended) and npm.
 
 ```bash
-npm install
-npm run dev        # http://localhost:5173
+git clone https://github.com/thesydoruk/dog-test.git
+cd dog-test
+npm install                 # dependencies
+npx playwright install      # browsers for the e2e tests (one-time)
+
+npm run dev                 # http://localhost:5173
 ```
 
-Production build: `npm run build && npm run preview`.
+Checks and tests:
+
+```bash
+npm run lint                # ESLint
+npm run typecheck           # TypeScript
+npm test                    # unit and component tests
+npm run test:e2e            # e2e in Chromium at five screen sizes
+npm run test:all            # everything CI runs
+```
+
+Production build and a local preview of it:
+
+```bash
+npm run build
+npm run preview             # http://localhost:4173
+```
+
+Or run the production image with Docker (static bundle behind nginx):
+
+```bash
+docker build -t dog-viewer .
+docker run --rm -p 3060:80 dog-viewer    # http://localhost:3060
+```
 
 ## Scripts
 
