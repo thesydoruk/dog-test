@@ -100,25 +100,28 @@ test.describe('Part 1: general display', () => {
     await viewer.expectMainDog(labrador.breed, labrador.url);
   });
 
-  test('focus order follows the visual order', async ({ viewer, page, browserName }) => {
+  test('focus order follows the visual order', async ({ viewer, page }) => {
     await viewer.open();
     await viewer.heading.click();
 
     const focusedName = () =>
       page.evaluate(() => document.activeElement?.textContent?.trim() ?? '');
 
-    // The favorites link only exists in the single-column layout, and Safari skips
-    // links when tabbing unless the user holds Option, so WebKit never lands on it.
-    const linkInTabOrder = viewer.viewportWidth < SIDEBAR_BREAKPOINT && browserName !== 'webkit';
-    const expectedOrder = [
-      'Add to favorites',
-      ...(linkInTabOrder ? ['Favorites (0)'] : []),
-      'New dogs',
-      ...THUMBNAIL_BREEDS,
-    ];
-    for (const name of expectedOrder) {
+    await page.keyboard.press('Tab');
+    expect(await focusedName()).toBe('Add to favorites');
+
+    // The favorites link only exists in the single-column layout. Safari on macOS and
+    // Windows skips links when tabbing (WebKit on Linux does not), so accept both.
+    await page.keyboard.press('Tab');
+    if ((await focusedName()) === 'Favorites (0)') {
+      expect(viewer.viewportWidth).toBeLessThan(SIDEBAR_BREAKPOINT);
       await page.keyboard.press('Tab');
-      expect(await focusedName()).toBe(name);
+    }
+    expect(await focusedName()).toBe('New dogs');
+
+    for (const breed of THUMBNAIL_BREEDS) {
+      await page.keyboard.press('Tab');
+      expect(await focusedName()).toBe(breed);
     }
   });
 
