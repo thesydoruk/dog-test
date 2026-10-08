@@ -195,6 +195,6 @@ test.describe('Part 1: general display', () => {
     await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
 
     await viewer.expectMainDog(MAIN_DOG.breed, MAIN_DOG.url);
-    expect(dogApi.requests).toEqual({ randomDog: 1, randomDogs: 1 });
+    expect(dogApi.requests).toEqual({ randomDog: 1, randomDogs: 1, breeds: 0, breedImages: 0 });
   });
 });
