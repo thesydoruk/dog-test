@@ -12,7 +12,29 @@ A small React app that shows random dogs from the [Dog API](https://dog.ceo/dog-
   On phones a **Favorites (n)** link next to the button jumps to the list, and every change is
   announced to screen readers.
 
-## Getting started
+## Run it without cloning
+
+Every green build on `main` publishes a public image to GitHub Container Registry. Only Docker is
+needed:
+
+```bash
+docker run --rm -p 3060:80 ghcr.io/thesydoruk/dog-viewer:latest
+# open http://localhost:3060
+```
+
+Or keep it running with Compose, using the same stack file the deployment uses:
+
+```bash
+mkdir dog-viewer && cd dog-viewer
+curl -fsSLO https://raw.githubusercontent.com/thesydoruk/dog-test/main/infra/docker-compose.prod.yml
+docker compose -f docker-compose.prod.yml up -d            # http://localhost:3060
+WEB_PORT=8080 docker compose -f docker-compose.prod.yml up -d   # another port
+docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d  # update
+```
+
+Tags: `latest` and `main` follow the latest green commit, `sha-<short>` pins one build.
+
+## Getting started from source
 
 Requires Node.js 20 or newer (22 recommended) and npm.
 
