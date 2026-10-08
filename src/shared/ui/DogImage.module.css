@@ -6,6 +6,21 @@
   background: var(--color-surface-muted);
 }
 
+/* Fade photos in once they have loaded instead of popping in line by line. */
+.pending {
+  opacity: 0;
+}
+
+.loaded {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .image {
+    transition: opacity 300ms ease-out;
+  }
+}
+
 .fallback {
   display: grid;
   place-items: center;

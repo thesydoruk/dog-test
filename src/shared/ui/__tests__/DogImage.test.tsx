@@ -8,12 +8,29 @@ describe('DogImage', () => {
     const img = screen.getByRole('img', { name: 'Pug' });
     expect(img).toHaveAttribute('src', '/a.jpg');
     expect(img).toHaveAttribute('loading', 'lazy');
+    expect(img).not.toHaveAttribute('fetchpriority');
     expect(img).toHaveClass('extra');
   });
 
-  it('can load eagerly', () => {
-    render(<DogImage src="/a.jpg" alt="Pug" loading="eager" />);
-    expect(screen.getByRole('img')).toHaveAttribute('loading', 'eager');
+  it('can load eagerly with a high priority', () => {
+    render(<DogImage src="/a.jpg" alt="Pug" loading="eager" fetchPriority="high" />);
+
+    const img = screen.getByRole('img');
+    expect(img).toHaveAttribute('loading', 'eager');
+    expect(img).toHaveAttribute('fetchpriority', 'high');
+  });
+
+  it('fades the image in once it has loaded', () => {
+    const { rerender } = render(<DogImage src="/a.jpg" alt="Pug" />);
+    const img = screen.getByRole('img');
+    expect(img).toHaveClass('pending');
+
+    fireEvent.load(img);
+    expect(img).toHaveClass('loaded');
+
+    // A new source starts hidden again until it loads.
+    rerender(<DogImage src="/b.jpg" alt="Pug" />);
+    expect(screen.getByRole('img')).toHaveClass('pending');
   });
 
   it('shows a labelled fallback when the image fails', () => {

@@ -131,6 +131,34 @@ img {
   background: var(--color-accent-surface);
 }
 
+.button--secondary {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-accent-text);
+}
+
+.button--secondary:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-surface);
+}
+
+.button[aria-disabled='true'] {
+  cursor: progress;
+}
+
+/* A little pop when a dog becomes a favorite. */
+@media (prefers-reduced-motion: no-preference) {
+  .button--active svg {
+    animation: heart-pop 320ms ease-out;
+  }
+}
+
+@keyframes heart-pop {
+  30% {
+    transform: scale(1.4);
+  }
+}
+
 .skeleton {
   background: var(--color-surface-muted);
 }

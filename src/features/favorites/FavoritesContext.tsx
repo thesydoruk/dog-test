@@ -8,11 +8,12 @@ import {
   type ReactNode,
 } from 'react';
 import type { Dog } from '@/domain/dog';
-import { favoritesReducer } from './favoritesReducer';
+import { createFavoritesState, favoritesReducer, type FavoritesChange } from './favoritesReducer';
 import { loadFavorites, saveFavorites } from './storage';
 
 interface FavoritesContextValue {
   favorites: Dog[];
+  lastChange: FavoritesChange | null;
   addFavorite: (dog: Dog) => void;
   removeFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
@@ -26,10 +27,10 @@ interface FavoritesProviderProps {
 }
 
 export function FavoritesProvider({ children, initialFavorites }: FavoritesProviderProps) {
-  const [favorites, dispatch] = useReducer(
+  const [{ items: favorites, lastChange }, dispatch] = useReducer(
     favoritesReducer,
     initialFavorites,
-    (initial) => initial ?? loadFavorites(),
+    (initial) => createFavoritesState(initial ?? loadFavorites()),
   );
 
   useEffect(() => {
@@ -44,8 +45,8 @@ export function FavoritesProvider({ children, initialFavorites }: FavoritesProvi
   );
 
   const value = useMemo(
-    () => ({ favorites, addFavorite, removeFavorite, isFavorite }),
-    [favorites, addFavorite, removeFavorite, isFavorite],
+    () => ({ favorites, lastChange, addFavorite, removeFavorite, isFavorite }),
+    [favorites, lastChange, addFavorite, removeFavorite, isFavorite],
   );
 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;

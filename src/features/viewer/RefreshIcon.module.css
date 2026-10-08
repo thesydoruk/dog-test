@@ -1,0 +1,11 @@
+@media (prefers-reduced-motion: no-preference) {
+  .spinning {
+    animation: spin 900ms linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

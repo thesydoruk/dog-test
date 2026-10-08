@@ -1,4 +1,6 @@
 import { AddToFavoritesButton } from '@/features/favorites/AddToFavoritesButton';
+import { FavoritesAnnouncer } from '@/features/favorites/FavoritesAnnouncer';
+import { FavoritesJumpLink } from '@/features/favorites/FavoritesJumpLink';
 import { FavoritesPanel } from '@/features/favorites/FavoritesPanel';
 import { MainDog } from '@/features/viewer/MainDog';
 import { useSelection } from '@/features/viewer/SelectionContext';
@@ -18,13 +20,22 @@ export function App() {
       </header>
 
       <main className={styles.main}>
-        <MainDog renderActions={(dog) => <AddToFavoritesButton dog={dog} />} />
+        <MainDog
+          renderActions={(dog) => (
+            <div className={styles.actions}>
+              <AddToFavoritesButton dog={dog} />
+              <FavoritesJumpLink />
+            </div>
+          )}
+        />
         <ThumbnailGrid />
       </main>
 
       <div className={styles.sidebar}>
         <FavoritesPanel selectedId={currentDog?.id ?? null} onSelect={selectDog} />
       </div>
+
+      <FavoritesAnnouncer />
     </div>
   );
 }

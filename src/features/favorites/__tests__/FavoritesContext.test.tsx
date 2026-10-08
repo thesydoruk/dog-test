@@ -14,6 +14,7 @@ describe('FavoritesContext', () => {
     const { result } = renderHook(() => useFavorites(), { wrapper });
 
     expect(result.current.favorites).toEqual([mainDog]);
+    expect(result.current.lastChange).toBeNull();
     expect(result.current.isFavorite(mainDog.id)).toBe(true);
   });
 
@@ -28,7 +29,7 @@ describe('FavoritesContext', () => {
     expect(result.current.favorites).toEqual([]);
   });
 
-  it('adds and removes favorites and persists every change', () => {
+  it('adds and removes favorites, tracks the last change and persists', () => {
     const { result } = renderHook(() => useFavorites(), { wrapper });
     const other = thumbnailDogs[0]!;
 
@@ -36,10 +37,12 @@ describe('FavoritesContext', () => {
     act(() => result.current.addFavorite(other));
     act(() => result.current.addFavorite(mainDog));
     expect(result.current.favorites).toEqual([mainDog, other]);
+    expect(result.current.lastChange).toEqual({ type: 'added', dog: other });
     expect(loadFavorites()).toEqual([mainDog, other]);
 
     act(() => result.current.removeFavorite(mainDog.id));
     expect(result.current.favorites).toEqual([other]);
+    expect(result.current.lastChange).toEqual({ type: 'removed', dog: mainDog });
     expect(result.current.isFavorite(mainDog.id)).toBe(false);
     expect(loadFavorites()).toEqual([other]);
   });

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Dog } from '@/domain/dog';
+import { FAVORITES_HEADING_ID } from './constants';
 import { FavoriteItem } from './FavoriteItem';
 import { useFavorites } from './FavoritesContext';
 import styles from './FavoritesPanel.module.css';
@@ -32,8 +33,8 @@ export function FavoritesPanel({ selectedId, onSelect }: FavoritesPanelProps) {
   };
 
   return (
-    <aside className={styles.panel} aria-labelledby="favorites-heading">
-      <h2 id="favorites-heading" className={styles.heading} ref={headingRef} tabIndex={-1}>
+    <aside className={styles.panel} aria-labelledby={FAVORITES_HEADING_ID}>
+      <h2 id={FAVORITES_HEADING_ID} className={styles.heading} ref={headingRef} tabIndex={-1}>
         Favorites{' '}
         <span className={styles.count}>
           <span data-testid="favorites-count">{favorites.length}</span>

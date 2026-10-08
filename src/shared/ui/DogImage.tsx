@@ -6,11 +6,13 @@ interface DogImageProps {
   alt: string;
   className?: string;
   loading?: 'eager' | 'lazy';
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
 
-export function DogImage({ src, alt, className, loading = 'lazy' }: DogImageProps) {
-  // Tracking the failed URL (not a boolean) resets the fallback as soon as `src` changes.
+export function DogImage({ src, alt, className, loading = 'lazy', fetchPriority }: DogImageProps) {
+  // Tracking URLs (not booleans) resets both states as soon as `src` changes.
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
   const classes = [styles.image, className].filter(Boolean).join(' ');
 
   if (failedSrc === src) {
@@ -28,11 +30,13 @@ export function DogImage({ src, alt, className, loading = 'lazy' }: DogImageProp
 
   return (
     <img
-      className={classes}
+      className={`${classes} ${loadedSrc === src ? styles.loaded : styles.pending}`}
       src={src}
       alt={alt}
       loading={loading}
+      fetchPriority={fetchPriority}
       decoding="async"
+      onLoad={() => setLoadedSrc(src)}
       onError={() => setFailedSrc(src)}
     />
   );
