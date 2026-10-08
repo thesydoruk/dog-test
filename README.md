@@ -69,6 +69,9 @@ Conventions:
 - Plain modules (hooks, contexts, pure functions, unstyled components) stay flat.
 - Tests live in a `__tests__` folder next to the code they cover.
 
+Working on the code? See [docs/development.md](docs/development.md) for the feature checklist,
+the e2e toolkit and known quirks.
+
 - **Server state** lives in [TanStack Query](https://tanstack.com/query). Random endpoints return
   new dogs on every call, so background refetching is turned off; the user only gets new data
   when they retry.
