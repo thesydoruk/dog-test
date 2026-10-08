@@ -1,0 +1,25 @@
+# Production stack, run on the target host by infra/deploy/remote-deploy.sh.
+# The image is built by .github/workflows/cd.yml and published to GHCR; the host only pulls it.
+#   IMAGE_TAG   image tag to run (sha-1a2b3c4, main, 1.2.0)
+#   IMAGE_OWNER GHCR owner, lower-case (default thesydoruk)
+#   WEB_PORT    host port to publish on (default 3060)
+name: dog-viewer
+
+services:
+  web:
+    image: ghcr.io/${IMAGE_OWNER:-thesydoruk}/dog-viewer:${IMAGE_TAG:-main}
+    restart: unless-stopped
+    ports:
+      - '${WEB_PORT:-3060}:80'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO', '/dev/null', 'http://127.0.0.1/healthz']
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    # Without a cap Docker's json logs grow until they fill the disk.
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'

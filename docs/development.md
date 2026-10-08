@@ -114,3 +114,64 @@ assertions and hover.
 `npm run test:all` runs what CI runs locally (lint, Prettier, types, unit tests with coverage,
 Chromium e2e). CI additionally runs Firefox and WebKit and a live smoke test against the real
 API; the live job can fail without blocking the build.
+
+## Deployment
+
+```text
+push to main ──► CI (lint · unit · e2e ×3 browsers · image build)
+                  └─ success ──► CD: publish ghcr.io/thesydoruk/dog-viewer:{sha-xxxxxxx,main,latest}
+                                   └──► deploy to `production` over SSH (skipped until secrets exist)
+```
+
+The app is a static bundle served by nginx (`Dockerfile`, `infra/nginx.conf`). On the host it runs
+as one container from `infra/docker-compose.prod.yml`, published on `WEB_PORT` (default 3060);
+`infra/deploy/remote-deploy.sh` pulls the tag, recreates the container, waits for the health check
+and prunes old images. Rollback: **Actions → CD → Run workflow** with an older `sha-…` tag.
+
+### Target host
+
+Any Linux host with Docker Engine and the Compose plugin. The stack lives in `DEPLOY_PATH`
+(default `/opt/dog-viewer`) and listens on `WEB_PORT` (default 3060); put a TLS-terminating
+reverse proxy in front of it if it is exposed to the internet. Hosts, users, keys and paths are
+never committed: they live in the GitHub `production` environment and in your own SSH config.
+
+Manual deploy from a machine that can SSH to the host (`<host>` is an alias from your
+`~/.ssh/config`):
+
+```bash
+ssh <host> 'mkdir -p /opt/dog-viewer'
+scp infra/docker-compose.prod.yml infra/deploy/remote-deploy.sh <host>:/opt/dog-viewer/
+ssh <host> 'cd /opt/dog-viewer && IMAGE_TAG=main bash remote-deploy.sh'
+```
+
+### One-time setup for automatic deploys
+
+1. Create a dedicated key pair and authorise its public key on the target host (and on the
+   bastion, if the host is only reachable through one):
+
+   ```bash
+   ssh-keygen -t ed25519 -N '' -C dog-viewer-deploy -f ~/.ssh/dog-viewer-deploy
+   ssh <host> 'cat >> ~/.ssh/authorized_keys' < ~/.ssh/dog-viewer-deploy.pub
+   ```
+
+2. Collect the pinned host keys of every machine the workflow will connect to (the workflow never
+   trusts a host on first use): `ssh-keyscan -t ed25519 [-p <port>] <hostname>`. For a host behind
+   a bastion, run `ssh-keyscan` from the bastion and make sure the line starts with the name or
+   address the workflow uses in `DEPLOY_HOST`.
+
+3. Create the `production` environment (Settings → Environments) and add its secrets:
+
+   | Secret               | Value                                                         |
+   | -------------------- | ------------------------------------------------------------- |
+   | `DEPLOY_HOST`        | host name or IP of the target                                 |
+   | `DEPLOY_USER`        | SSH user allowed to run `docker`                              |
+   | `DEPLOY_JUMP`        | `user@bastion[:port]`, only if the target is behind a bastion |
+   | `DEPLOY_SSH_KEY`     | contents of `~/.ssh/dog-viewer-deploy`                        |
+   | `DEPLOY_KNOWN_HOSTS` | the `ssh-keyscan` output from step 2                          |
+
+   With `gh`: `gh secret set DEPLOY_SSH_KEY -e production < ~/.ssh/dog-viewer-deploy` and so on.
+   Optional variables: `DEPLOY_PATH`, `WEB_PORT`, `DEPLOY_URL` (shown on the deployment).
+   Add required reviewers to the environment if a deploy should wait for approval.
+
+The deploy key grants shell access to the host, so keep it only in the GitHub environment and
+rotate it by repeating step 1 with a new pair.

@@ -1,0 +1,131 @@
+# Continuous delivery.
+#
+# - CI succeeds on main  → image `sha-<short>` + `main` + `latest` → deploy to `production`
+# - manual dispatch      → redeploy an existing image tag (rollback)
+#
+# The image goes to GitHub Container Registry (ghcr.io/<owner>/dog-viewer). Deployment runs
+# infra/deploy/remote-deploy.sh on the host over SSH, optionally through a jump host. Until the
+# `production` environment has its DEPLOY_* secrets, the deploy step is skipped with a notice
+# (see docs/development.md, "Deployment").
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Existing image tag to deploy (e.g. sha-1a2b3c4 or main)
+        required: true
+        default: main
+
+concurrency:
+  group: cd
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/dog-viewer
+
+jobs:
+  publish:
+    name: Publish image
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - id: tag
+        name: Deployment tag
+        run: echo "tag=sha-${HEAD_SHA::7}" >> "$GITHUB_OUTPUT"
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          # Registry paths must be lower-case.
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.tag.outputs.tag }}
+            ${{ env.IMAGE }}:main
+            ${{ env.IMAGE }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy (production)
+    needs: [publish]
+    if: always() && (needs.publish.result == 'success' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: ${{ vars.DEPLOY_URL }}
+    env:
+      IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.image_tag || needs.publish.outputs.tag }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check deployment target
+        id: target
+        run: |
+          if [ -z "$DEPLOY_HOST" ]; then
+            echo "::notice::No DEPLOY_HOST secret in the production environment; image ${IMAGE_TAG} is published, deployment skipped."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Configure SSH
+        if: steps.target.outputs.enabled == 'true'
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_JUMP: ${{ secrets.DEPLOY_JUMP }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          # Pinned host keys for the target (and the jump host): never trust-on-first-use in CI.
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          {
+            echo "Host target"
+            echo "  HostName $DEPLOY_HOST"
+            echo "  User $DEPLOY_USER"
+            echo "  IdentityFile ~/.ssh/deploy_key"
+            echo "  IdentitiesOnly yes"
+            echo "  BatchMode yes"
+            # DEPLOY_JUMP is user@host[:port] of a bastion in front of the target, if any.
+            [ -n "$DEPLOY_JUMP" ] && echo "  ProxyJump $DEPLOY_JUMP"
+          } > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+      - name: Deploy ${{ env.IMAGE_TAG }}
+        if: steps.target.outputs.enabled == 'true'
+        env:
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/dog-viewer' }}
+          WEB_PORT: ${{ vars.WEB_PORT || '3060' }}
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ssh target "mkdir -p '${DEPLOY_PATH}'"
+          scp infra/docker-compose.prod.yml infra/deploy/remote-deploy.sh "target:${DEPLOY_PATH}/"
+          ssh target "cd '${DEPLOY_PATH}' && IMAGE_TAG='${IMAGE_TAG}' IMAGE_OWNER='${GITHUB_REPOSITORY_OWNER,,}' \
+            WEB_PORT='${WEB_PORT}' REGISTRY_USER='${REGISTRY_USER}' REGISTRY_TOKEN='${REGISTRY_TOKEN}' \
+            bash remote-deploy.sh"
