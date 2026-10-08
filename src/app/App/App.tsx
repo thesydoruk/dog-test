@@ -8,6 +8,19 @@ import { ThumbnailGrid } from '@/features/viewer/ThumbnailGrid';
 import { useCurrentDog } from '@/features/viewer/useCurrentDog';
 import styles from './App.module.css';
 
+/**
+ * The whole Dog Viewer page: header, the featured dog with its thumbnails, and the favorites
+ * panel.
+ *
+ * This is the only place where the `viewer` and `favorites` features meet. The favorites button
+ * reaches {@link MainDog} through its `renderActions` slot, and the panel gets the current
+ * selection via props, so neither feature imports the other.
+ *
+ * Layout is mobile first: one column on phones (favorites below the dogs), favorites on the
+ * right from 768 px up.
+ *
+ * Must be rendered inside {@link AppProviders}.
+ */
 export function App() {
   const { selectDog } = useSelection();
   const { dog: currentDog } = useCurrentDog();

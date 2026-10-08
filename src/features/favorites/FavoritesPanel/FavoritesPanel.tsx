@@ -5,11 +5,28 @@ import { FavoriteItem } from './FavoriteItem';
 import { useFavorites } from '../FavoritesContext';
 import styles from './FavoritesPanel.module.css';
 
+/** Props for {@link FavoritesPanel}. */
 interface FavoritesPanelProps {
+  /** Id of the dog currently shown as the main image, or `null`; that row is highlighted. */
   selectedId: string | null;
+  /** Called with a favorite when the user clicks it, to show it as the main image. */
   onSelect: (dog: Dog) => void;
 }
 
+/**
+ * The favorites list (an `<aside>` landmark labelled by its heading).
+ *
+ * Shows a count in the heading, an empty-state hint, or one {@link FavoriteItem} per saved dog in
+ * the order they were added. Selection comes in through props so this feature never imports the
+ * viewer.
+ *
+ * After a removal, focus moves to the next favorite (or the previous one if the last was
+ * removed, or the heading once the list is empty) instead of dropping to `<body>`.
+ *
+ * From 768 px up it sits in the sticky right-hand column and its list scrolls on its own.
+ *
+ * Must be rendered inside {@link FavoritesProvider}.
+ */
 export function FavoritesPanel({ selectedId, onSelect }: FavoritesPanelProps) {
   const { favorites, removeFavorite } = useFavorites();
   const listRef = useRef<HTMLUListElement>(null);

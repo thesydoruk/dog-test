@@ -7,6 +7,20 @@ import styles from './ThumbnailGrid.module.css';
 import { THUMBNAIL_COUNT, useRandomDogs } from '../useRandomDogs';
 import { useCurrentDog } from '../useCurrentDog';
 
+/**
+ * "More dogs": {@link THUMBNAIL_COUNT} random dogs as thumbnails, plus a "New dogs" button.
+ *
+ * Clicking a thumbnail makes it the main image; the thumbnail matching the main image is
+ * highlighted. States:
+ * - first load: one skeleton per thumbnail;
+ * - error: a message with "Try again" (the "New dogs" button is hidden);
+ * - refreshing: the old dogs stay visible but dimmed and inert (`aria-busy`), the icon spins and
+ *   "Loading new dogs…" is announced. Clicks on "New dogs" are ignored until it finishes.
+ *
+ * The grid is mobile first: 2 columns, 3 from 480 px, 5 from 1024 px.
+ *
+ * Must be rendered inside {@link AppProviders}.
+ */
 export function ThumbnailGrid() {
   const { data: dogs, isPending, isError, isFetching, refetch } = useRandomDogs(THUMBNAIL_COUNT);
   const { selectDog } = useSelection();

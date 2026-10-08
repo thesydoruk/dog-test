@@ -1,6 +1,19 @@
 import styles from './RefreshIcon.module.css';
 
-export function RefreshIcon({ spinning }: { spinning: boolean }) {
+/** Props for {@link RefreshIcon}. */
+interface RefreshIconProps {
+  /** Spins while new dogs are loading (only without reduced motion). */
+  spinning: boolean;
+}
+
+/**
+ * Decorative 18×18 circular-arrow icon for the "New dogs" button, drawn in `currentColor`.
+ *
+ * Hidden from assistive technology; the loading state is announced by a separate status message.
+ *
+ * Private to `ThumbnailGrid`.
+ */
+export function RefreshIcon({ spinning }: RefreshIconProps) {
   return (
     <svg
       className={spinning ? styles.spinning : undefined}

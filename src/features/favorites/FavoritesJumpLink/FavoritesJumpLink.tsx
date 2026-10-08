@@ -5,9 +5,16 @@ import { useFavorites } from '../FavoritesContext';
 import styles from './FavoritesJumpLink.module.css';
 
 /**
- * On phones the favorites list sits below the thumbnails, out of sight of the
- * favorites button. This link shows the count and jumps to the list. Wider
- * screens show the list beside the dogs, so the link is hidden there.
+ * "Favorites (n) ↓" link that jumps to the favorites list.
+ *
+ * On phones the list sits below the thumbnails, out of sight of the favorites button; this link
+ * shows the count and scrolls to the list (smoothly, unless reduced motion is preferred), then
+ * moves focus to the list heading so keyboard and screen reader users land there too. From
+ * 768 px up the list is beside the dogs, so CSS hides the link.
+ *
+ * It is a real `#favorites-heading` anchor, so it still works if the panel isn't rendered.
+ *
+ * Must be rendered inside {@link FavoritesProvider}, on the same page as {@link FavoritesPanel}.
  */
 export function FavoritesJumpLink() {
   const { favorites } = useFavorites();

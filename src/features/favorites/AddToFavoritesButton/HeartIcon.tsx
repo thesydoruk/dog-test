@@ -1,4 +1,16 @@
-export function HeartIcon({ filled }: { filled: boolean }) {
+/** Props for {@link HeartIcon}. */
+interface HeartIconProps {
+  /** Filled when the dog is a favorite, outlined otherwise. */
+  filled: boolean;
+}
+
+/**
+ * Decorative 20×20 heart drawn in `currentColor`, so it follows the button's text colour.
+ *
+ * Hidden from assistive technology; the button's text carries the meaning. Pops briefly when it
+ * becomes filled (see `.button--active svg` in `global.css`), unless reduced motion is preferred.
+ */
+export function HeartIcon({ filled }: HeartIconProps) {
   return (
     <svg
       width="20"

@@ -7,11 +7,36 @@ import { Loading } from '@/shared/ui/Loading';
 import styles from './MainDog.module.css';
 import { useCurrentDog } from '../useCurrentDog';
 
+/** Props for {@link MainDog}. */
 interface MainDogProps {
-  /** Slot for actions on the shown dog (e.g. favoriting), so this feature stays decoupled. */
+  /**
+   * Renders controls under the photo for the dog being shown (e.g. the favorites button).
+   *
+   * A slot instead of a direct import keeps the viewer feature independent of favorites; `App`
+   * wires them together. Not called while loading or on error.
+   *
+   * @example
+   * ```tsx
+   * <MainDog renderActions={(dog) => <AddToFavoritesButton dog={dog} />} />
+   * ```
+   */
   renderActions?: (dog: Dog) => ReactNode;
 }
 
+/**
+ * The featured dog: a large photo labelled with its breed, in a "Featured dog" region.
+ *
+ * Shows the dog from {@link useCurrentDog}: the user's pick, or the random dog until they pick
+ * one. While the random dog loads it shows a skeleton, and if loading fails (and nothing is
+ * picked) an error with "Try again".
+ *
+ * The photo is shown whole (`object-fit: contain`) over a blurred copy of itself that fills the
+ * letterbox, and loads eagerly with high priority as the page's main image. When the user picks
+ * another dog and the photo is off screen (phones), it scrolls back into view; the initial load
+ * never scrolls.
+ *
+ * Must be rendered inside {@link AppProviders}.
+ */
 export function MainDog({ renderActions }: MainDogProps) {
   const { dog, isPending, refetch } = useCurrentDog();
   const frameRef = useRef<HTMLDivElement>(null);
