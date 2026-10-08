@@ -13,6 +13,7 @@ jobs:
   checks:
     name: Lint, types and unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,6 +35,7 @@ jobs:
   e2e:
     name: E2E (${{ matrix.browser }})
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -45,7 +47,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # A hung apt or browser download must fail fast instead of eating the job budget.
       - run: npx playwright install --with-deps ${{ matrix.browser }}
+        timeout-minutes: 10
       - run: npx playwright test --grep-invert @live --project="${{ matrix.browser }}-*"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -57,6 +61,7 @@ jobs:
   image:
     name: Docker image builds
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -70,6 +75,7 @@ jobs:
   e2e-live:
     name: E2E smoke (real Dog API)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -79,4 +85,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+        timeout-minutes: 10
       - run: npm run test:e2e:live
