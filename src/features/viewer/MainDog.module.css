@@ -1,0 +1,61 @@
+.section {
+  min-width: 0;
+}
+
+.figure {
+  margin: 0;
+}
+
+.frame {
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 70vh;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+}
+
+/* The main photo is shown whole; thumbnails crop instead. */
+.image {
+  object-fit: contain;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.breed {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.breedSkeleton {
+  width: 40%;
+  height: 1.75rem;
+  border-radius: var(--radius-sm);
+}
+
+@media (min-width: 480px) {
+  .caption {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 1024px) {
+  .frame {
+    aspect-ratio: 16 / 10;
+  }
+
+  .breed {
+    font-size: var(--font-size-2xl);
+  }
+}

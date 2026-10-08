@@ -1,0 +1,148 @@
+:root {
+  color-scheme: light dark;
+
+  --color-bg: #f6f5f2;
+  --color-surface: #ffffff;
+  --color-surface-muted: #ecebe6;
+  --color-border: #dcdad3;
+  --color-text: #1d1c1a;
+  --color-text-muted: #5c5a54;
+  --color-accent: #b4461e;
+  --color-accent-hover: #943918;
+  --color-accent-surface: #fbeae3;
+  --color-accent-text: #8a3414;
+  --color-on-accent: #ffffff;
+  --color-focus: #1d5fd1;
+  --color-danger-surface: #fdecec;
+  --color-danger-border: #e6a5a5;
+  --color-danger-text: #9b1c1c;
+  --shadow-md: 0 6px 18px rgb(0 0 0 / 0.14);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 2rem;
+
+  --touch-target: 44px;
+
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 100%;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #151413;
+    --color-surface: #1f1e1c;
+    --color-surface-muted: #2b2a27;
+    --color-border: #3a3935;
+    --color-text: #f1efe9;
+    --color-text-muted: #b2afa6;
+    --color-accent: #f08a5d;
+    --color-accent-hover: #f5a37e;
+    --color-accent-surface: #3a2419;
+    --color-accent-text: #f5b393;
+    --color-on-accent: #1d1c1a;
+    --color-focus: #8ab4ff;
+    --color-danger-surface: #3a1d1d;
+    --color-danger-border: #7a3434;
+    --color-danger-text: #f3b0b0;
+    --shadow-md: 0 6px 18px rgb(0 0 0 / 0.5);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--color-bg);
+}
+
+img {
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-accent);
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover {
+  border-color: var(--color-accent-hover);
+  background: var(--color-accent-hover);
+}
+
+.button--active {
+  background: var(--color-surface);
+  color: var(--color-accent-text);
+}
+
+.button--active:hover {
+  background: var(--color-accent-surface);
+}
+
+.skeleton {
+  background: var(--color-surface-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    animation: skeleton-pulse 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
