@@ -36,7 +36,9 @@ export default defineConfig({
   reporter: isCI
     ? [['github'], ['html', { open: 'never' }]]
     : [['list'], ['html', { open: 'never' }]],
-  // Headless Firefox on Windows is slow under parallel load, hence the generous timeout.
+  // Headless Firefox and WebKit on Windows get starved under parallel load, so the
+  // timeouts are generous; a healthy test finishes in a few seconds.
+  timeout: 60_000,
   expect: { timeout: 10_000 },
   use: {
     baseURL: BASE_URL,

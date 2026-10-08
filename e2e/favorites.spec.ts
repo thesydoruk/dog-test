@@ -200,8 +200,7 @@ test.describe('Part 2: favorites', () => {
     }
     await expect(viewer.favoritesCount).toHaveText('11');
 
-    const last = viewer.favorite('English Cocker Spaniel');
-    await last.click();
+    await viewer.pickFavorite('English Cocker Spaniel');
     await viewer.expectMainDog('English Cocker Spaniel', byBreed('English Cocker Spaniel').url);
     await viewer.removeFavoriteButton('English Cocker Spaniel').click();
     await expect(viewer.favoritesCount).toHaveText('10');
