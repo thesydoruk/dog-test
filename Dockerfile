@@ -2,6 +2,8 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 ENV CI=true
+# Git hooks are for developer machines; there is no .git in the build context.
+ENV HUSKY=0
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .

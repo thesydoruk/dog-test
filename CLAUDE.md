@@ -29,3 +29,5 @@ React 19 + TypeScript + Vite. Full conventions and the e2e toolkit are in
 - `npm run test:all` is what CI runs (Chromium e2e only). `npm run test:e2e:all` runs every
   browser and is slow on Windows.
 - Unit coverage is enforced; keep it at 100%.
+- Husky hooks run on commit (lint-staged: ESLint + Prettier on staged files) and on push
+  (typecheck + unit tests). Fix what they report; don't bypass them with `--no-verify`.

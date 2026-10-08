@@ -182,6 +182,17 @@ assertions and hover.
 
 ## Quality gates
 
+Git hooks (Husky, installed by `npm install` through the `prepare` script):
+
+| Hook         | Runs                                                                | Takes |
+| ------------ | ------------------------------------------------------------------- | ----- |
+| `pre-commit` | `lint-staged`: ESLint `--fix` and Prettier on the staged files only | ~3 s  |
+| `pre-push`   | `npm run typecheck` and the unit tests                              | ~15 s |
+
+E2E tests are not in a hook (they take minutes); run `npm run test:e2e` yourself before pushing
+UI or `e2e/` changes. Skip the hooks in an emergency with `git commit --no-verify` /
+`git push --no-verify`; CI still runs everything. Docker builds set `HUSKY=0`.
+
 `npm run test:all` runs what CI runs locally (lint, Prettier, types, unit tests with coverage,
 Chromium e2e). CI additionally runs Firefox and WebKit and a live smoke test against the real
 API; the live job can fail without blocking the build.
